@@ -1,14 +1,42 @@
+import json
 import math
 from tkinter import *
+from datetime import datetime
 
 PINK = "#e2979c"
 RED = "#e7305b"
 YELLOW = "#f7f5dd"
 
-
 is_running = False
 counter_value = 0
 updating_timer = False
+now = datetime.now()
+date = now.strftime("%d/%m/%Y")
+
+
+def store_counter_value(current_date, value):
+    new_entry = {
+        "date": current_date,
+        "value": value
+    }
+
+    existing_data = []
+
+    try:
+        with open("timer_data.json", "r") as data_file:
+            existing_data = json.load(data_file)
+    except FileNotFoundError:
+        pass
+
+    for entry in existing_data:
+        if entry['date'] == date:
+            entry['value'] += value
+            updated = True
+            break
+    else:
+        existing_data.append(new_entry)
+    with open("timer_data.json", "w") as json_file:
+        json.dump(existing_data, json_file)
 
 
 def start_counter():
@@ -25,6 +53,8 @@ def start_counter():
 
 def stop_counter():
     global is_running, counter_value
+    if counter_value > 0:
+        store_counter_value(date, counter_value)
     counter_value = 0
     is_running = False
     start_button.config(text="Start")
@@ -45,10 +75,10 @@ def update_counter():
         hour_count = f"0{hour_count}"
 
     if is_running:
-        counter_value += 1
-        print(counter_value)
         canvas.itemconfig(timer_text, text=f"{hour_count}:{min_count}:{sec_count}")
         window.after(1000, update_counter)
+        counter_value += 1
+        print(counter_value)
     else:
         updating_timer = False
 
@@ -64,11 +94,11 @@ timer_text = canvas.create_text(380, 230, text="00:00:00", fill=RED, font=("Aria
 canvas.pack()
 
 start_button = Button(text="Start", height=2, width=15, bg=RED, fg="#fff",
-                           highlightthickness=0, borderwidth=1, command=start_counter)
+                      highlightthickness=0, borderwidth=1, command=start_counter)
 button_window = canvas.create_window(380, 300, window=start_button)
 
 stop_button = Button(text="Stop", height=2, width=15, bg=RED, fg="#fff",
-                          highlightthickness=0, borderwidth=1, command=stop_counter)
+                     highlightthickness=0, borderwidth=1, command=stop_counter)
 pause_window = canvas.create_window(380, 350, window=stop_button)
 
 window.mainloop()

@@ -29,7 +29,7 @@ This timer application allows users to start and stop a timer, displaying the el
 
 1. Run the application using Python:
    ```sh
-   python timer_app.py
+   python main.py
 
 1. Click the "Start" button to start the timer. The timer will begin counting up.
 2. Click the "Pause" button to pause the timer. You can then click "Resume" to continue.

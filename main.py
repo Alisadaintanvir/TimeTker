@@ -31,7 +31,6 @@ def store_counter_value(current_date, value):
     for entry in existing_data:
         if entry['date'] == date:
             entry['value'] += value
-            updated = True
             break
     else:
         existing_data.append(new_entry)
@@ -84,19 +83,16 @@ def update_counter():
 
 
 window = Tk()
-window.title("My Timer")
+window.title("TimeTker")
 window.config(width=800, height=550)
-
 canvas = Canvas(width=800, height=500, bg="#b4b4b4")
 canvas_bg = PhotoImage(file="images/3.png")
 canvas.create_image(400, 285, image=canvas_bg)
 timer_text = canvas.create_text(380, 230, text="00:00:00", fill=RED, font=("Arial", 45, "bold"))
 canvas.pack()
-
 start_button = Button(text="Start", height=2, width=15, bg=RED, fg="#fff",
                       highlightthickness=0, borderwidth=1, command=start_counter)
 button_window = canvas.create_window(380, 300, window=start_button)
-
 stop_button = Button(text="Stop", height=2, width=15, bg=RED, fg="#fff",
                      highlightthickness=0, borderwidth=1, command=stop_counter)
 pause_window = canvas.create_window(380, 350, window=stop_button)

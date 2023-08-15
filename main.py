@@ -1,7 +1,8 @@
-import json
 import math
 from tkinter import *
-from datetime import datetime
+from tkinter import ttk
+
+from storing_data import StoringData
 
 PINK = "#e2979c"
 RED = "#e7305b"
@@ -10,32 +11,7 @@ YELLOW = "#f7f5dd"
 is_running = False
 counter_value = 0
 updating_timer = False
-now = datetime.now()
-date = now.strftime("%d/%m/%Y")
-
-
-def store_counter_value(current_date, value):
-    new_entry = {
-        "date": current_date,
-        "value": value
-    }
-
-    existing_data = []
-
-    try:
-        with open("timer_data.json", "r") as data_file:
-            existing_data = json.load(data_file)
-    except FileNotFoundError:
-        pass
-
-    for entry in existing_data:
-        if entry['date'] == date:
-            entry['value'] += value
-            break
-    else:
-        existing_data.append(new_entry)
-    with open("timer_data.json", "w") as json_file:
-        json.dump(existing_data, json_file)
+storing_data = StoringData()
 
 
 def start_counter():
@@ -53,7 +29,7 @@ def start_counter():
 def stop_counter():
     global is_running, counter_value
     if counter_value > 0:
-        store_counter_value(date, counter_value)
+        storing_data.store_counter_value(counter_value - 1)
     counter_value = 0
     is_running = False
     start_button.config(text="Start")
@@ -77,9 +53,40 @@ def update_counter():
         canvas.itemconfig(timer_text, text=f"{hour_count}:{min_count}:{sec_count}")
         window.after(1000, update_counter)
         counter_value += 1
-        print(counter_value)
     else:
         updating_timer = False
+
+
+def add_window():
+    def populate_table():
+        timer_data = storing_data.fetch_data()
+
+        for entry in timer_data:
+            date = entry["date"]
+            value = entry['value']
+            minute = math.floor(value / 60)
+            hour = math.floor(minute / 60)
+            second = math.floor(value % 60)
+
+            if second < 10:
+                second = f"0{second}"
+            if minute < 10:
+                minute = f"0{minute}"
+            if hour < 10:
+                hour = f"0{hour}"
+
+            time = f"{hour} : {minute} : {second}"
+
+            tree.insert("", "end", values=(date, time))
+
+    window2 = Toplevel()
+    window2.title("Timer Data Table")
+
+    tree = ttk.Treeview(window2, columns=("Date", "Value"), show="headings")
+    tree.heading("Date", text="Date")
+    tree.heading("Value", text="Time")
+    populate_table()
+    tree.pack()
 
 
 window = Tk()
@@ -92,9 +99,13 @@ timer_text = canvas.create_text(380, 230, text="00:00:00", fill=RED, font=("Aria
 canvas.pack()
 start_button = Button(text="Start", height=2, width=15, bg=RED, fg="#fff",
                       highlightthickness=0, borderwidth=1, command=start_counter)
-button_window = canvas.create_window(380, 300, window=start_button)
-stop_button = Button(text="Stop", height=2, width=15, bg=RED, fg="#fff",
-                     highlightthickness=0, borderwidth=1, command=stop_counter)
-pause_window = canvas.create_window(380, 350, window=stop_button)
+start_button_window = canvas.create_window(380, 300, window=start_button)
+reset_button = Button(text="Reset", height=2, width=15, bg=RED, fg="#fff",
+                      highlightthickness=0, borderwidth=1, command=stop_counter)
+reset_button_window = canvas.create_window(380, 350, window=reset_button)
+
+new_window_button = Button(text="Show Timer Info", height=1, width=15, bg=RED, fg="#fff",
+                           highlightthickness=0, borderwidth=1, command=add_window)
+new_window_button_window = canvas.create_window(730, 30, window=new_window_button)
 
 window.mainloop()
